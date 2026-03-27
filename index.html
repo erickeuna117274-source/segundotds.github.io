@@ -1,1 +1,101 @@
+<?php
+// CONFIGURAÇÃO DE SEGURANÇA
+$sua_senha = "tds2026"; // Mude esta senha para a que você quiser
+$arquivo_dados = "avisos.txt";
 
+// Lógica para salvar novo aviso
+if (isset($_POST['adicionar']) && $_POST['senha'] === $sua_senha) {
+    $data = $_POST['data'];
+    $titulo = $_POST['titulo'];
+    $desc = $_POST['desc'];
+    $semana = $_POST['semana']; // "atual" ou "proxima"
+
+    $novo_aviso = $data . "|" . $titulo . "|" . $desc . "|" . $semana . PHP_EOL;
+    file_put_contents($arquivo_dados, $novo_aviso, FILE_APPEND);
+    header("Location: index.php"); // Recarrega a página para limpar o formulário
+}
+?>
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mural TDS - Oficial</title>
+    <style>
+        :root { --primary: #2F5F45; --accent: #C19F5C; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f4f4; margin: 0; }
+        header { background: var(--primary); color: white; text-align: center; padding: 30px; }
+        .foto-turma { width: 90%; max-width: 800px; height: 300px; object-fit: cover; 
+                      display: block; margin: -50px auto 20px; border-radius: 15px; border: 5px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .container { max-width: 900px; margin: auto; padding: 20px; }
+        
+        /* Formulário de Admin */
+        .admin-panel { background: #fff; padding: 20px; border-radius: 10px; margin-bottom: 30px; border: 1px solid #ddd; }
+        input, textarea, select { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px; }
+        button { background: var(--primary); color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px; }
+
+        /* Cards */
+        .secao-titulo { color: var(--primary); border-left: 5px solid var(--accent); padding-left: 10px; margin: 30px 0 15px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-top: 4px solid var(--accent); }
+        .data-tag { font-weight: bold; color: var(--primary); font-size: 0.9em; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Mural de Avisos TDS</h1>
+</header>
+
+<img src="foto_da_turma.jpg" alt="Nossa Turma" class="foto-turma">
+
+<div class="container">
+    
+    <details class="admin-panel">
+        <summary><strong>⚙️ Postar Novo Aviso (Moderador)</strong></summary>
+        <form method="POST">
+            <input type="text" name="titulo" placeholder="Título da Atividade" required>
+            <input type="text" name="data" placeholder="Ex: 26 de Março" required>
+            <textarea name="desc" placeholder="Detalhes da atividade..."></textarea>
+            <select name="semana">
+                <option value="atual">Esta Semana</option>
+                <option value="proxima">Próxima Semana</option>
+            </select>
+            <input type="password" name="senha" placeholder="Senha de Moderador" required>
+            <button type="submit" name="adicionar">Publicar Aviso</button>
+        </form>
+    </details>
+
+    <h2 class="secao-titulo">Esta Semana</h2>
+    <div class="grid">
+        <?php
+        if (file_exists($arquivo_dados)) {
+            $avisos = file($arquivo_dados);
+            foreach ($avisos as $linha) {
+                list($data, $titulo, $desc, $semana) = explode("|", $linha);
+                if (trim($semana) == "atual") {
+                    echo "<div class='card'><span class='data-tag'>$data</span><h3>$titulo</h3><p>$desc</p></div>";
+                }
+            }
+        }
+        ?>
+    </div>
+
+    <h2 class="secao-titulo">Próxima Semana</h2>
+    <div class="grid">
+        <?php
+        if (file_exists($arquivo_dados)) {
+            foreach ($avisos as $linha) {
+                list($data, $titulo, $desc, $semana) = explode("|", $linha);
+                if (trim($semana) == "proxima") {
+                    echo "<div class='card'><span class='data-tag'>$data</span><h3>$titulo</h3><p>$desc</p></div>";
+                }
+            }
+        }
+        ?>
+    </div>
+</div>
+
+</body>
+</html>
